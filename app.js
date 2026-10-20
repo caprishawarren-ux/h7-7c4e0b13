@@ -6,6 +6,8 @@ const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
 const fmtT=t=>{if(!t)return"";let[h,m]=t.split(":").map(Number);const ap=h>=12?"pm":"am";h=h%12||12;return h+(m?":"+String(m).padStart(2,"0"):"")+ap};
 const KEY="schoolhub_v1",TODAY=new Date();TODAY.setHours(0,0,0,0);const TS=fd(TODAY);
 let D=JSON.parse(localStorage.getItem(KEY)||"null")||JSON.parse(JSON.stringify(window.SEED));
+// v3: NCCS colors (only if user kept the old default kid colors)
+if((D.version||1)<3){const c=D.settings.kids;if(c.jaylin.color==="#ff3d7f")c.jaylin.color="#0073A8";if(c.skyla.color==="#8b5cf6")c.skyla.color="#D94F70";}
 // migrate older saved data to the newer seed without wiping user entries
 if((D.version||1)<(window.SEED.version||1)){const S=window.SEED,sj=S.kids.jaylin,j=D.kids.jaylin;
  const OLD=["Math (Pre-Algebra)","ELA","Science","Social Studies","PE / Health","Elective"];
@@ -15,7 +17,8 @@ if((D.version||1)<(window.SEED.version||1)){const S=window.SEED,sj=S.kids.jaylin
  sj.homework.forEach(h=>{if(!j.homework.some(x=>x.id===h.id))j.homework.push(h)});
  Object.entries(sj.materials).forEach(([k,m])=>{const c=j.materials[k];if(!c)j.materials[k]=m;else{m.links.forEach(l=>{if(!c.links.some(x=>x.url===l.url))c.links.push(l)});if(!c.notes)c.notes=m.notes}});
  if(!D.settings.kids.jaylin.school)D.settings.kids.jaylin.school=S.settings.kids.jaylin.school;
- D.unassigned=null;D.version=S.version;localStorage.setItem(KEY,JSON.stringify(D))}
+ D.unassigned=null;}
+if((D.version||1)<window.SEED.version){D.version=window.SEED.version;localStorage.setItem(KEY,JSON.stringify(D))}
 let kid=localStorage.getItem(KEY+"_kid")||"skyla";
 const save=()=>localStorage.setItem(KEY,JSON.stringify(D));const K=()=>D.kids[kid];const uid=()=>Math.random().toString(36).slice(2,9);
 const subjects=()=>[...new Set(K().schedule.map(p=>p.subject).filter(Boolean).concat(Object.keys(K().materials)))];

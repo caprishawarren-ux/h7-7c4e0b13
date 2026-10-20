@@ -1,0 +1,24 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>School Hub · Week at a Glance</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<header><div class="brand">📚 SCHOOL<span>HUB</span></div>
+<div class="kids" id="kids"></div>
+<nav><a href="#week">Week</a><a href="#homework">Homework</a><a href="#calendar">Calendar</a><a href="#study">Study</a><a href="#schedule">Schedule</a><a href="#settings">Settings</a></nav></header>
+<main>
+<section id="week" class="page"><div class="bar"><button id="wPrev">‹</button><h2 id="wTitle"></h2><button id="wNext">›</button><button id="wToday">This week</button></div><div id="weekgrid" class="weekgrid"></div></section>
+<section id="homework" class="page"><h2>Homework</h2>
+ <form id="hwForm" class="card row"><label>Subject<select name="subject" id="hwSubj"></select></label><label class="grow">Assignment<input name="title" required></label><label>Due<input type="date" name="due" required></label><button>Add</button></form>
+ <div class="bar"><button data-f="open" class="on">To do</button><button data-f="all">All</button><button data-f="done">Done</button></div><div id="hwList"></div></section>
+<section id="calendar" class="page"><div class="bar"><button id="cPrev">‹</button><h2 id="cTitle"></h2><button id="cNext">›</button></div>
+ <div class="legend"><span class="t-test">Test</span><span class="t-project">Project</span><span class="t-event">School event</span><span class="t-hw">Homework due</span><span class="t-soccer">Soccer (Jaylin)</span></div>
+ <div id="calgrid"></div>
+ <form id="evForm" class="card row"><label>Date<input type="date" name="date" required></label><label>Type<select name="type"><option value="test">Test</option><option value="project">Project</option><option value="event">School event</option></select></label><label class="grow">Title<input name="title" required></label><button>Add</button></form>
+ <div id="evList"></div></section>
+<section id="study" class="page"><h2>Study Materials</h2><div class="bar" id="subjTabs"></div><div id="studyBody"></div></section>
+<section id="schedule" class="page"><h2>Class Schedule</h2><div class="card"><table id="schedTable"></table><button id="addPeriod">+ Add period</button> <button id="saveSched" class="primary">Save schedule</button></div></section>
+<section id="settings" class="page"><h2>Settings</h2><form id="setForm"></form>
+ <div class="card"><h3>Backup</h3><button id="exportBtn">⬇ Export JSON</button> <label class="btn">⬆ Import JSON<input type="file" id="importFile" accept="application/json" hidden></label> <button id="resetBtn" class="danger">Reset to starter data</button></div>
+ <div class="card" id="unassigned"></div></section>
+</main>
+<footer>Data is stored only in this browser (localStorage). Export a backup regularly.</footer>
+<script src="seed.js"></script><script src="soccer.js"></script><script src="app.js"></script></body></html>

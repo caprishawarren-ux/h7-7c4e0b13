@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "test": "node --test test/nov9-plans.test.mjs"
+    "test": "node --test test/*.mjs"
   },
   "devDependencies": {
     "linkedom": "0.18.12"

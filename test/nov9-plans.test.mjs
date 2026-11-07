@@ -34,7 +34,7 @@ function boot({ stored, kid } = {}) {
     confirm() { return true; }
   };
   vm.createContext(sandbox);
-  vm.runInContext([read("seed.js"), read("soccer.js"), read("app.js")].join("\n"), sandbox);
+  vm.runInContext([read("seed.js"), read("soccer.js"), read("rewards.js"), read("app.js")].join("\n"), sandbox);
   return { document, window, store, sandbox };
 }
 
@@ -52,7 +52,11 @@ const PRIOR = ["2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22", "2026-10-
 
 test("seed keeps both weeks and only sourced Nov 9-13 work", () => {
   const SEED = loadSeed();
-  assert.equal(SEED.version, 4);
+  assert.equal(SEED.version, 5);
+  assert.equal(SEED.settings.kids.jaylin.color.toLowerCase(), "#5b21b6");
+  assert.equal(SEED.settings.kids.skyla.color.toLowerCase(), "#be185d");
+  assert.equal(SEED.kids.jaylin.rewards.prizes.length, 0);
+  assert.equal(SEED.kids.skyla.rewards.balance, 0);
   assert.equal(SEED.settings.kids.jaylin.name, "Jaylin");
   assert.equal(SEED.settings.kids.skyla.name, "Skyla");
   assert.equal(SEED.settings.kids.jaylin.grade, "8th");
@@ -177,7 +181,12 @@ test("migration keeps completion, edits, and unassigned imports", () => {
 
   const page = boot({ stored, kid: "jaylin" });
   const D = saved(page.store);
-  assert.equal(D.version, 4);
+  assert.equal(D.version, 5);
+  assert.equal(D.settings.kids.jaylin.color, "#112233");
+  assert.equal(D.kids.jaylin.homework.find((h) => h.id === "jh0").done, true);
+  assert.equal(D.kids.jaylin.rewards.pending.length, 0);
+  assert.equal(D.kids.jaylin.rewards.balance, 0);
+  assert.ok(D.migrationBackup.kids.jaylin.homework.find((h) => h.id === "jh0" && h.done === true));
   assert.equal(D.settings.kids.jaylin.color, "#112233");
   assert.equal(D.settings.showSoccer, false);
   assert.equal(D.unassigned.label, "pending import");
@@ -257,7 +266,8 @@ test("page stays noindex and cache-busts the new assets", () => {
   const html = read("index.html");
   assert.match(html, /noindex, nofollow/);
   assert.equal(html.includes("?v=3"), false);
-  assert.equal((html.match(/\?v=4/g) || []).length, 4);
+  assert.equal(html.includes("?v=5"), false);
+  assert.equal((html.match(/\?v=6/g) || []).length, 5);
   const css = read("style.css");
   assert.match(css, /max-width:800px/);
   assert.match(css, /max-width:600px/);

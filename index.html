@@ -1,14 +1,15 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#1B3B60"><meta name="viewport" content="width=device-width,initial-scale=1"><title>School Hub · Week at a Glance</title><link rel="stylesheet" href="style.css?v=4"></head>
+<meta name="theme-color" content="#1B3B60"><meta name="viewport" content="width=device-width,initial-scale=1"><title>School Hub · Week at a Glance</title><link rel="stylesheet" href="style.css?v=6"></head>
 <body>
 <header><div class="brand">📚 SCHOOL<span>HUB</span><small>NCCS EAGLES · GO EAGLES!</small></div>
 <div class="kids" id="kids"></div>
-<nav><a href="#week">Week</a><a href="#homework">Homework</a><a href="#calendar">Calendar</a><a href="#study">Study</a><a href="#schedule">Schedule</a><a href="#settings">Settings</a></nav></header>
+<nav><a href="#week">Week</a><a href="#homework">Homework</a><a href="#rewards">Rewards</a><a href="#calendar">Calendar</a><a href="#study">Study</a><a href="#schedule">Schedule</a><a href="#settings">Settings</a></nav></header>
 <main>
 <section id="week" class="page"><div class="bar"><button id="wPrev">‹</button><h2 id="wTitle"></h2><button id="wNext">›</button><button id="wToday">This week</button></div><div id="weekgrid" class="weekgrid"></div></section>
 <section id="homework" class="page"><h2>Homework</h2>
  <form id="hwForm" class="card row"><label>Subject<select name="subject" id="hwSubj"></select></label><label class="grow">Assignment<input name="title" required></label><label>Due<input type="date" name="due" required></label><button>Add</button></form>
- <div class="bar"><button data-f="open" class="on">To do</button><button data-f="all">All</button><button data-f="done">Done</button></div><div id="hwList"></div></section>
+ <div class="bar"><button data-f="open" class="on">To do</button><button data-f="all">All</button><button data-f="done">Done</button></div><p class="mini">Homework checked off at least one day early can be reviewed for points. Points are added on the Rewards page, after a parent review on this device.</p><div id="hwList"></div></section>
+<section id="rewards" class="page"><h2>Rewards</h2><div id="rewardsBody"></div></section>
 <section id="calendar" class="page"><div class="bar"><button id="cPrev">‹</button><h2 id="cTitle"></h2><button id="cNext">›</button></div>
  <div class="legend"><span class="t-test">Test</span><span class="t-project">Project</span><span class="t-event">School event</span><span class="t-hw">Homework due</span><span class="t-soccer">Soccer (Jaylin)</span></div>
  <div id="calgrid"></div>
@@ -21,4 +22,4 @@
  <div class="card" id="unassigned"></div></section>
 </main>
 <footer>Data is stored only in this browser (localStorage). Export a backup regularly.</footer>
-<script src="seed.js?v=4"></script><script src="soccer.js?v=4"></script><script src="app.js?v=4"></script></body></html>
+<script src="seed.js?v=6"></script><script src="soccer.js?v=6"></script><script src="rewards.js?v=6"></script><script src="app.js?v=6"></script></body></html>

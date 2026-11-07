@@ -8,16 +8,41 @@ const KEY="schoolhub_v1",TODAY=new Date();TODAY.setHours(0,0,0,0);const TS=fd(TO
 let D=JSON.parse(localStorage.getItem(KEY)||"null")||JSON.parse(JSON.stringify(window.SEED));
 // v3: NCCS colors (only if user kept the old default kid colors)
 if((D.version||1)<3){const c=D.settings.kids;if((c.jaylin.color||"").toLowerCase()==="#ff3d7f")c.jaylin.color="#0073A8";if((c.skyla.color||"").toLowerCase()==="#8b5cf6")c.skyla.color="#D94F70";}
-// migrate older saved data to the newer seed without wiping user entries
-if((D.version||1)<(window.SEED.version||1)){const S=window.SEED,sj=S.kids.jaylin,j=D.kids.jaylin;
+// Add new school weeks without wiping completion, notes the user edited, cards, or older days.
+const PREV_NOTES={
+ jaylin:{"ELA":"The Outsiders unit; Flowers for Algernon next.","Bible":"Verse quiz Fri 10/30: Ephesians 2:1-8.","Science":"Unit 3: Atoms, Bonding, Periodic Table. Element Hero/Villain project. Bring Chromebook + Periodic Table daily."},
+ skyla:{"ELA":"The City of Ember: annotate on post-its. Grammar Quiz covers L1-3 & L7-9 (Thu 10/29).","Math":"Volume of figures made of rectangular prisms (Lessons 9-13).","History":"Landforms pizza-box model: map and model MUST match.","Science":"Electricity & Magnetism unit: static electricity, electric circuits. Electricity Quiz Fri 11/6. Charge Chromebook nightly."}
+};
+function mergeKid(cur,seedKid,prev){
+ if(!cur.waag)cur.waag={};
+ Object.entries(seedKid.waag||{}).forEach(([d,w])=>{if(d>="2026-11-09"&&!cur.waag[d])cur.waag[d]=JSON.parse(JSON.stringify(w))});
+ const addNew=(list,incoming,key)=>{(incoming||[]).forEach(item=>{
+  if(list.some(x=>x.id===item.id))return;
+  if((item[key]||"")<"2026-11-09")return;
+  list.push(JSON.parse(JSON.stringify(item)));
+ })};
+ addNew(cur.events,seedKid.events,"date");
+ addNew(cur.homework,seedKid.homework,"due");
+ Object.entries(seedKid.materials||{}).forEach(([k,m])=>{
+  const c=cur.materials[k];
+  if(!c){cur.materials[k]=JSON.parse(JSON.stringify(m));return}
+  if(!c.links)c.links=[];
+  (m.links||[]).forEach(l=>{
+   const hit=c.links.find(x=>x.url===l.url);
+   if(!hit)c.links.push({label:l.label,url:l.url});
+   else if(hit.label==="Bible WAAG slides"&&l.label!==hit.label)hit.label=l.label;
+  });
+  if(!c.notes||(prev&&c.notes===prev[k]))c.notes=m.notes;
+  if(!c.cards)c.cards=[];
+ });
+}
+if((D.version||1)<(window.SEED.version||1)){const S=window.SEED,j=D.kids.jaylin;
  const OLD=["Math (Pre-Algebra)","ELA","Science","Social Studies","PE / Health","Elective"];
- if(j.schedule.map(p=>p.subject).join("|")===OLD.join("|"))j.schedule=sj.schedule;
- Object.assign(j.waag,sj.waag);
- sj.events.forEach(e=>{if(!j.events.some(x=>x.id===e.id))j.events.push(e)});
- sj.homework.forEach(h=>{if(!j.homework.some(x=>x.id===h.id))j.homework.push(h)});
- Object.entries(sj.materials).forEach(([k,m])=>{const c=j.materials[k];if(!c)j.materials[k]=m;else{m.links.forEach(l=>{if(!c.links.some(x=>x.url===l.url))c.links.push(l)});if(!c.notes)c.notes=m.notes}});
+ if(j.schedule.map(p=>p.subject).join("|")===OLD.join("|"))j.schedule=JSON.parse(JSON.stringify(S.kids.jaylin.schedule));
+ mergeKid(D.kids.jaylin,S.kids.jaylin,PREV_NOTES.jaylin);
+ mergeKid(D.kids.skyla,S.kids.skyla,PREV_NOTES.skyla);
  if(!D.settings.kids.jaylin.school)D.settings.kids.jaylin.school=S.settings.kids.jaylin.school;
- D.unassigned=null;}
+ if(!D.settings.kids.skyla.school)D.settings.kids.skyla.school=S.settings.kids.skyla.school;}
 if((D.version||1)<window.SEED.version){D.version=window.SEED.version;localStorage.setItem(KEY,JSON.stringify(D))}
 let kid=localStorage.getItem(KEY+"_kid")||"skyla";
 const save=()=>localStorage.setItem(KEY,JSON.stringify(D));const K=()=>D.kids[kid];const uid=()=>Math.random().toString(36).slice(2,9);
@@ -31,8 +56,9 @@ window.onhashchange=show;
 const soccerOn=ds=>kid==="jaylin"&&D.settings.showSoccer?(window.SOCCER?.events||[]).filter(e=>e.date===ds):[];
 const evOn=ds=>K().events.filter(e=>e.date===ds);const hwOn=ds=>K().homework.filter(h=>h.due===ds);
 
-/* week */
-let wk=add(TODAY,-((TODAY.getDay()+6)%7));if(TODAY.getDay()===6||TODAY.getDay()===0)wk=add(wk,7);
+/* week — Sat/Sun open the upcoming school week (Mon-Fri), not the weekend just ending */
+function schoolWeekStart(today){const d=new Date(today);d.setHours(0,0,0,0);const monday=add(d,-((d.getDay()+6)%7));return (d.getDay()===6||d.getDay()===0)?add(monday,7):monday}
+let wk=schoolWeekStart(TODAY);
 function renderWeek(){$("#wTitle").textContent="Week of "+wk.toLocaleDateString(undefined,{month:"long",day:"numeric"});
  $("#weekgrid").innerHTML=[0,1,2,3,4].map(i=>{const d=add(wk,i),ds=fd(d),w=K().waag[ds];
   let h=`<div class="day ${ds===TS?"today":""}"><h3>${nice(d)}</h3>`;
@@ -40,9 +66,9 @@ function renderWeek(){$("#wTitle").textContent="Week of "+wk.toLocaleDateString(
   hwOn(ds).forEach(x=>h+=`<span class="chip t-hw ${x.done?"t-done":""}">✏️ ${esc(x.subject)}: ${esc(x.title)}</span>`);
   soccerOn(ds).forEach(e=>h+=`<span class="chip t-soccer">⚽ ${fmtT(e.start)} ${esc(e.type==="game"?e.title:"Practice")}</span>`);
   h+=K().schedule.filter(p=>p.subject).map(p=>`<p class="mini"><b>${esc(p.period)}</b> ${esc(p.subject)}${p.start?" · "+fmtT(p.start):""}${p.room?" · Rm "+esc(p.room):""}${p.teacher?" · "+esc(p.teacher):""}</p>`).join("");
-  if(w)h+=`<details class="waag"><summary>📋 WAAG notes</summary>${w.sections.map(s=>`<b>${esc(s.subject)}</b><ul>${s.items.map(i=>`<li>${esc(i)}</li>`).join("")}</ul>`).join("")}</details>`;
+  if(w)h+=`<details class="waag"><summary>📋 WAAG notes</summary>${w.sections.map(s=>`<b>${esc(s.subject)}${s.stale?' <span class="stale">Stale</span>':''}</b><ul>${s.items.map(i=>`<li>${esc(i)}</li>`).join("")}</ul>`).join("")}</details>${w.note?`<p class="mini">${esc(w.note)}</p>`:""}`;
   return h+"</div>"}).join("")}
-$("#wPrev").onclick=()=>{wk=add(wk,-7);renderWeek()};$("#wNext").onclick=()=>{wk=add(wk,7);renderWeek()};$("#wToday").onclick=()=>{wk=add(TODAY,-((TODAY.getDay()+6)%7));renderWeek()};
+$("#wPrev").onclick=()=>{wk=add(wk,-7);renderWeek()};$("#wNext").onclick=()=>{wk=add(wk,7);renderWeek()};$("#wToday").onclick=()=>{wk=schoolWeekStart(TODAY);renderWeek()};
 
 /* homework */
 let hf="open";

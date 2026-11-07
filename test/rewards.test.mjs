@@ -68,26 +68,30 @@ function approve(page, points = 10, days = 1) {
 
 test("student colors meet contrast on buttons, text, cards, and calendar accents", () => {
   const css = read("style.css");
-  assert.match(css, /nav a\.active\{background:var\(--k\);color:#fff\}/);
+  assert.match(css, /--bg:#ffffff/);
+  assert.match(css, /--txt:#1B3B60/);
+  assert.match(css, /nav a\.active\{background:var\(--k\);color:var\(--k-on\)\}/);
   assert.match(css, /\.day\{[^}]*border-top:4px solid var\(--k\)/);
   assert.match(css, /\.cell\.today\{outline:2px solid var\(--k\)/);
-  assert.match(css, /h2\{color:var\(--ice\);border-left:5px solid var\(--k\)/);
+  assert.match(css, /h2\{[^}]*color:var\(--txt\);border-left:5px solid var\(--k\)/);
   assert.match(css, /details\.waag summary\{[^}]*color:var\(--k-ink\)/);
   assert.match(css, /a\{color:var\(--k-ink\)\}/);
-  const jay = ["#5B21B6", "#C4B5FD"];
-  const sky = ["#BE185D", "#F9A8D4"];
+  assert.ok(contrast("#1B3B60", "#ffffff") >= 4.5);
+  assert.ok(contrast("#3d4c63", "#ffffff") >= 4.5);
+  const jay = ["#5B21B6", "#5B21B6"];
+  const sky = ["#BE185D", "#BE185D"];
   for (const [fill, ink] of [jay, sky]) {
     assert.ok(contrast("#ffffff", fill) >= 4.5, fill);
-    assert.ok(contrast("#EEF8FD", fill) >= 4.5, fill);
-    for (const bg of ["#0d2c4f", "#06213f", "#021F3D"]) assert.ok(contrast(ink, bg) >= 4.5, ink + " " + bg);
+    for (const bg of ["#ffffff", "#f4f6f8", "#f7f8fa"]) assert.ok(contrast(ink, bg) >= 4.5, ink + " " + bg);
   }
   const page = boot();
   const root = page.document.documentElement;
   assert.equal(root.style.getPropertyValue("--k").toLowerCase(), "#be185d");
-  assert.equal(root.style.getPropertyValue("--k-ink").toLowerCase(), "#f9a8d4");
+  assert.equal(root.style.getPropertyValue("--k-ink").toLowerCase(), "#be185d");
+  assert.equal(root.style.getPropertyValue("--k-on").toLowerCase(), "#ffffff");
   [...page.document.querySelectorAll("#kids button")].find((b) => b.dataset.k === "jaylin").onclick();
   assert.equal(root.style.getPropertyValue("--k").toLowerCase(), "#5b21b6");
-  assert.equal(root.style.getPropertyValue("--k-ink").toLowerCase(), "#c4b5fd");
+  assert.equal(root.style.getPropertyValue("--k-ink").toLowerCase(), "#5b21b6");
   const rewards = page.document.querySelector("#rewardsBody").textContent;
   assert.match(rewards, /Suggested/);
   assert.match(rewards, /not approved yet/);
@@ -256,7 +260,7 @@ test("same-day work, quizzes, events, and old check-offs do not earn points", ()
     kid: "jaylin"
   });
   const migrated = saved(old.store);
-  assert.equal(migrated.version, 5);
+  assert.equal(migrated.version, 6);
   assert.equal(migrated.settings.kids.jaylin.color.toLowerCase(), "#5b21b6");
   assert.equal(migrated.settings.kids.skyla.color.toLowerCase(), "#be185d");
   assert.equal(migrated.kids.jaylin.homework[0].done, true);

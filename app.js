@@ -59,6 +59,14 @@ if((D.version||1)<5){
  if(!D.migrationBackup){D.migrationBackup={at:new Date().toISOString(),fromVersion:D.version||1,note:"Saved on this device before the rewards update.",kids:{}};
   for(const [id,k] of Object.entries(D.kids))D.migrationBackup.kids[id]={homework:JSON.parse(JSON.stringify(k.homework||[])),events:JSON.parse(JSON.stringify(k.events||[])),schedule:JSON.parse(JSON.stringify(k.schedule||[])),materials:JSON.parse(JSON.stringify(k.materials||{}))}}
 }
+if((D.version||1)<6){
+ const lightInk=["#c4b5fd","#f9a8d4"];
+ for(const k of Object.values(D.settings.kids||{})){
+  if(!k||!k.color)continue;
+  const ink=(k.ink||"").toLowerCase();
+  if(!ink||lightInk.includes(ink)||SR().contrast(k.ink,"#ffffff")<4.5)k.ink=SR().inkFor(k.color);
+ }
+}
 ensureRewards();
 if((D.version||1)<window.SEED.version){D.version=window.SEED.version;localStorage.setItem(KEY,JSON.stringify(D))}
 let kid=localStorage.getItem(KEY+"_kid")||"skyla";
@@ -68,7 +76,7 @@ function nowDate(){return window.SCHOOLHUB_NOW?new Date(window.SCHOOLHUB_NOW):ne
 function rewardCtx(){const rule=D.settings.rewards;const early=SR().ruleReady(rule)?Number(rule.approved.earlyDays):Number(rule.earlyDays)||1;return {today:SR().nyDay(nowDate(),rule.timezone),earlyDays:early,ids:uid,nowIso:nowDate().toISOString()}}
 let prizeConfirm=null,rewardMsg="";
 
-function applyKid(){const k=D.settings.kids[kid];if(!k.ink)k.ink=SR().inkFor(k.color);document.documentElement.style.setProperty("--k",k.color);document.documentElement.style.setProperty("--k-ink",k.ink);
+function applyKid(){const k=D.settings.kids[kid];if(!k.ink||SR().contrast(k.ink,"#ffffff")<4.5)k.ink=SR().inkFor(k.color);document.documentElement.style.setProperty("--k",k.color);document.documentElement.style.setProperty("--k-ink",k.ink);document.documentElement.style.setProperty("--k-on",SR().onAccent(k.color));
  $("#kids").innerHTML=Object.entries(D.settings.kids).map(([id,k])=>`<button style="--c:${k.color}" class="${id===kid?"on":""}" data-k="${id}">${esc(k.name)}<small style="font-weight:400"> · ${esc(k.grade)}</small></button>`).join("");
  $$("#kids button").forEach(b=>b.onclick=()=>{kid=b.dataset.k;localStorage.setItem(KEY+"_kid",kid);renderAll()})}
 function show(){const id=location.hash.slice(1)||"week";$$(".page").forEach(p=>p.classList.toggle("active",p.id===id));$$("nav a").forEach(a=>a.classList.toggle("active",a.hash==="#"+id))}

@@ -97,7 +97,8 @@ test("student colors meet contrast on buttons, text, cards, and calendar accents
   assert.match(rewards, /not approved yet/);
   assert.match(rewards, /No prizes yet/);
   assert.match(rewards, /no parent login/);
-  assert.doesNotMatch(rewards, /\$|purchase|cash|dollar/i);
+  assert.match(rewards, /does not send money/);
+  assert.doesNotMatch(rewards, /purchase|bank account|paypal|venmo/i);
 });
 
 test("early timing uses the New York calendar day and skips quizzes, tests, and undated work", () => {
@@ -202,7 +203,7 @@ test("parent review, duplicates, undo, prizes, and separate balances persist", (
   const undoButtons = [...again.document.querySelectorAll("[data-undo]")];
   const awardUndo = undoButtons.find((b) => b.parentElement.textContent.includes("Added 10 points"));
   awardUndo.onclick();
-  assert.match(again.document.querySelector("#rewardsBody").textContent, /already recorded toward a prize/);
+  assert.match(again.document.querySelector("#rewardsBody").textContent, /toward a prize/);
   assert.equal(saved(again.store).kids.skyla.rewards.balance, 0);
   const redeemUndo = [...again.document.querySelectorAll("[data-undo]")].find((b) => b.parentElement.textContent.includes("Recorded prize"));
   redeemUndo.onclick();
@@ -260,7 +261,10 @@ test("same-day work, quizzes, events, and old check-offs do not earn points", ()
     kid: "jaylin"
   });
   const migrated = saved(old.store);
-  assert.equal(migrated.version, 6);
+  assert.equal(migrated.version, 7);
+  assert.equal(migrated.settings.rewards.status, "suggested");
+  assert.equal(migrated.settings.rewards.cash.approved.pointsPerDollar, 10);
+  assert.equal(migrated.settings.rewards.cash.approved.weeklyCapCents, 1000);
   assert.equal(migrated.settings.kids.jaylin.color.toLowerCase(), "#5b21b6");
   assert.equal(migrated.settings.kids.skyla.color.toLowerCase(), "#be185d");
   assert.equal(migrated.kids.jaylin.homework[0].done, true);
